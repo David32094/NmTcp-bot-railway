@@ -143,6 +143,7 @@ data22 = None
 isroom = False
 isroom2 = False
 http_session = None  # Persistent HTTP session for connection pooling
+bot_start_time = time.time()  # Para calcular uptime en health check
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 def encrypt_packet(plain_text, key, iv):
     plain_text = bytes.fromhex(plain_text)
@@ -4286,6 +4287,25 @@ class PanelHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 logging.error(f"[PANEL] Error en GET /api/status: {e}")
                 self.send_response(500)
                 self.end_headers()
+        elif self.path == '/health' or self.path == '/':
+            # Health check endpoint para Railway (mantiene el servicio activo)
+            try:
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                health_response = {
+                    "status": "ok",
+                    "service": "david-ia-bot",
+                    "timestamp": time.time(),
+                    "uptime": time.time() - bot_start_time if 'bot_start_time' in globals() else 0
+                }
+                self.wfile.write(json_module.dumps(health_response).encode('utf-8'))
+                logging.info(f"[HEALTH] Health check recibido - Servicio activo")
+            except Exception as e:
+                logging.error(f"[HEALTH] Error en health check: {e}")
+                self.send_response(500)
+                self.end_headers()
         else:
             self.send_response(404)
             self.end_headers()
@@ -4416,6 +4436,31 @@ def start_panel_server(port=3000, max_retries=3):
     panel_server_thread = threading.Thread(target=run_server, daemon=True)
     panel_server_thread.start()
     return panel_server_thread
+
+def start_keep_alive_loop():
+    """Envía requests HTTP periódicos para mantener el servicio activo en Railway"""
+    import urllib.request
+    
+    def keep_alive():
+        while True:
+            try:
+                time.sleep(60)  # Cada 60 segundos (1 minuto)
+                # Hacer un request a nuestro propio health check
+                try:
+                    port = int(os.environ.get('PORT', 3000))
+                    url = f"http://localhost:{port}/health"
+                    urllib.request.urlopen(url, timeout=5)
+                    logging.debug("[KEEP-ALIVE] Health check interno enviado")
+                except Exception as e:
+                    logging.debug(f"[KEEP-ALIVE] Error en keep-alive interno: {e}")
+            except Exception as e:
+                logging.error(f"[KEEP-ALIVE] Error en loop de keep-alive: {e}")
+                time.sleep(60)
+    
+    keep_alive_thread = threading.Thread(target=keep_alive, daemon=True)
+    keep_alive_thread.start()
+    logging.info("[KEEP-ALIVE] Keep-alive loop iniciado")
+    return keep_alive_thread
 # --- END: HTTP Server for Panel Integration ---
 
 # --- START: Modified for robust execution and restart ---
@@ -4493,6 +4538,13 @@ if __name__ == "__main__":
         start_panel_server(port=PORT)
         # Dar tiempo para que el servidor se inicie (no bloquear si falla)
         time.sleep(0.3)
+        
+        # Iniciar keep-alive loop para mantener el servicio activo en Railway
+        try:
+            start_keep_alive_loop()
+        except Exception as e:
+            logging.warning(f"[KEEP-ALIVE] No se pudo iniciar keep-alive: {e}")
+            
     except Exception as e:
         logging.warning(f"[PANEL] Advertencia al iniciar servidor HTTP: {e}")
         logging.info(f"[PANEL] El bot continuará funcionando. Si el puerto está ocupado, el servidor anterior seguirá activo.")
