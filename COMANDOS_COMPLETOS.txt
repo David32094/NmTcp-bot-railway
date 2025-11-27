@@ -1,0 +1,795 @@
+═══════════════════════════════════════════════════════════════════════════════
+                    LISTA COMPLETA DE COMANDOS DEL BOT
+                    NmTcp(bd) NO FUCNIONA AVANZADO
+═══════════════════════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════════════════════
+                    PARTE 1: COMANDOS FUNCIONALES
+═══════════════════════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────────────────────
+CATEGORÍA 1: INFORMACIÓN Y AYUDA
+───────────────────────────────────────────────────────────────────────────────
+
+1. /help
+   Descripción: Muestra la ayuda completa del bot en 3 mensajes
+   Uso: /help
+   Estado: ✅ FUNCIONAL
+
+2. /admin
+   Descripción: Muestra información del desarrollador/owner del bot
+   Uso: /admin
+   Estado: ✅ FUNCIONAL
+   Respuesta: Información de contacto (Telegram, Instagram, etc.)
+
+3. /info <UID>
+   Descripción: Obtiene información completa de un jugador
+   Uso: /info 12345678
+   Estado: ✅ FUNCIONAL
+   Información mostrada:
+   - Nombre de la cuenta
+   - Nivel
+   - Likes
+   - UID
+   - Región
+   - Rango BR y CS
+   - Puntos de rango
+   - Bio/Firma
+   - Información de Guild (si está en una)
+
+4. /status <UID>
+   Descripción: Verifica el estado de un jugador (online/offline, en sala)
+   Uso: /status 12345678
+   Estado: ✅ FUNCIONAL
+   Muestra: Estado del jugador y si está en una sala, información de la sala
+
+───────────────────────────────────────────────────────────────────────────────
+CATEGORÍA 2: SQUAD/GRUPO - CREACIÓN E INVITACIONES
+───────────────────────────────────────────────────────────────────────────────
+
+5. /join <TeamCode>
+   Descripción: Unirse a un equipo usando el código de la sala
+   Uso: /join ABC123
+   Estado: ✅ FUNCIONAL
+   Nota: Se une una vez a la sala especificada
+
+6. /solo
+   Descripción: Salir del grupo/squad actual y volver a modo solo
+   Uso: /solo
+   Estado: ✅ FUNCIONAL
+
+7. /inv <UID> <TipoSquad>
+   Descripción: Invitar un jugador a un squad del tamaño especificado
+   Uso: /inv 12345678 4
+      /inv 12345678 5
+   Estado: ✅ FUNCIONAL
+   Tipos de Squad: 4 (4 jugadores) o 5 (5 jugadores)
+   Nota: Si no se especifica el tipo, muestra mensaje de ayuda
+
+8. /3 [UID]
+   Descripción: Crear un squad de 3 jugadores e invitar al UID especificado
+   Uso: /3
+      /3 12345678
+   Estado: ✅ FUNCIONAL
+   Nota: Si no se especifica UID, invita al remitente del comando
+
+9. /4 [UID]
+   Descripción: Crear un squad de 4 jugadores e invitar al UID especificado
+   Uso: /4
+      /4 12345678
+   Estado: ✅ FUNCIONAL
+   Nota: Si no se especifica UID, invita al remitente del comando
+
+10. /5 [UID]
+    Descripción: Crear un squad de 5 jugadores e invitar al UID especificado
+    Uso: /5
+       /5 12345678
+    Estado: ✅ FUNCIONAL
+    Nota: Si no se especifica UID, invita al remitente del comando
+
+11. /6 [UID]
+    Descripción: Crear un squad de 6 jugadores e invitar al UID especificado
+    Uso: /6
+       /6 12345678
+    Estado: ✅ FUNCIONAL
+    Nota: Si no se especifica UID, invita al remitente del comando
+
+12. /change <tamaño>
+    Descripción: Cambiar el tamaño del squad actual
+    Uso: /change 3
+       /change 4
+       /change 5
+       /change 6
+       /change spm
+    Estado: ✅ FUNCIONAL
+    Opciones:
+    - 3, 4, 5, 6: Cambia a ese tamaño específico
+    - spm: Spam de cambio entre 5 y 6 jugadores (15 ciclos)
+    Nota: Solo funciona si estás en un squad
+
+13. /snd <UID> <TipoSquad>
+    Descripción: Enviar invitación a squad (similar a /inv pero con confirmación)
+    Uso: /snd 12345678 4
+       /snd 12345678 5
+    Estado: ✅ FUNCIONAL
+    Tipos de Squad: 3, 4, 5, 6
+    Nota: Espera confirmación de aceptación antes de salir
+
+───────────────────────────────────────────────────────────────────────────────
+CATEGORÍA 3: SPAM/ATAQUE - INVITACIONES Y ATAQUES
+───────────────────────────────────────────────────────────────────────────────
+
+14. /spam <UID>
+    Descripción: Enviar solicitudes de amistad masivas a un jugador
+    Uso: /spam 12345678
+    Estado: ✅ FUNCIONAL
+    Nota: Usa API externa para enviar las solicitudes
+
+15. /sm <UID>
+    Descripción: Spam de solicitudes de unión a squad (30 solicitudes)
+    Uso: /sm 12345678
+    Estado: ✅ FUNCIONAL
+    Nota: 
+    - Resetea el bot a modo solo antes de empezar
+    - Envía 30 solicitudes de unión
+    - Vuelve a modo solo al finalizar
+
+16. /x <UID>
+    Descripción: Spam de invitaciones a squad de 6 jugadores (29 ciclos)
+    Uso: /x 12345678
+    Estado: ✅ FUNCIONAL
+    Proceso:
+    - Crea squad de 6 jugadores
+    - Invita al objetivo
+    - Sale y vuelve a modo solo
+    - Repite 29 veces
+
+17. /team <UID>
+    Descripción: Spam de invitaciones a squad durante 10 segundos
+    Uso: /team 12345678
+    Estado: ✅ FUNCIONAL
+    Proceso:
+    - Crea squad
+    - Cambia entre 5 y 6 jugadores
+    - Invita al objetivo
+    - Repite durante 10 segundos
+
+18. /attack <TeamCode>
+    Descripción: Ataque a un equipo (join + start spam por 45 segundos)
+    Uso: /attack ABC123
+    Estado: ✅ FUNCIONAL
+    Proceso:
+    - Se une a la sala
+    - Envía comando de inicio
+    - Sale de la sala
+    - Repite durante 45 segundos
+
+19. /start <TeamCode> [cantidad]
+    Descripción: Forzar inicio de partida en una sala
+    Uso: /start ABC123
+       /start ABC123 20
+    Estado: ✅ FUNCIONAL
+    Parámetros:
+    - TeamCode: Código de la sala
+    - cantidad: Número de veces (opcional, máx. 50, default: 20)
+    Proceso:
+    - Se une a la sala
+    - Envía comando de inicio múltiples veces
+    - Sale de la sala
+
+20. /lag <TeamCode> [repeticiones]
+    Descripción: Spam de join/leave para causar lag en una sala
+    Uso: /lag ABC123
+       /lag ABC123 2
+    Estado: ✅ FUNCIONAL
+    Parámetros:
+    - TeamCode: Código de la sala
+    - repeticiones: Número de veces (opcional, máx. 3, default: 1)
+    Proceso:
+    - 11111 ciclos de join/leave por cada repetición
+    - Delay mínimo entre operaciones
+
+21. xr (sin "/")
+    Descripción: Spam de rechazo de solicitudes (150 repeticiones)
+    Uso: xr
+    Estado: ✅ FUNCIONAL
+    Nota: Comando sin "/", funciona escribiendo solo "xr"
+    Proceso: Envía 150 paquetes de rechazo
+
+───────────────────────────────────────────────────────────────────────────────
+CATEGORÍA 4: EMOTES
+───────────────────────────────────────────────────────────────────────────────
+
+22. /play <UID> <número>
+    Descripción: Reproducir emote por número (usa emotes.json)
+    Uso: /play 12345678 50
+       /play 12345678 98765432 50
+    Estado: ✅ FUNCIONAL
+    Características:
+    - Carga emotes desde emotes.json (hasta 400+ emotes)
+    - Soporta múltiples UIDs
+    - Envía el emote una vez y espera 5 segundos para completar
+    - Requiere archivo emotes.json en el directorio
+
+23. /play <UID> <emote_id>
+    Descripción: Reproducir emote usando ID directo
+    Uso: /play 12345678 909000063
+       /play 12345678 98765432 909000063
+    Estado: ✅ FUNCIONAL
+    Características:
+    - Usa el ID del emote directamente
+    - Soporta múltiples UIDs
+    - Envía el emote una vez y espera 5 segundos para completar
+    Nota: Hay dos implementaciones de /play en el código
+
+24. /ev <UID> <1-17>
+    Descripción: Reproducir emote de arma EVO (Max Evolution)
+    Uso: /ev 12345678 1
+    Estado: ✅ FUNCIONAL
+    Opciones disponibles:
+    1  = AK (909000063)
+    2  = SCAR (909000068)
+    3  = MP40 (1ra versión) (909000075)
+    4  = MP40 (2da versión) (909040010)
+    5  = M1014 (1ra versión) (909000081)
+    6  = M1014 (2da versión) (909039011)
+    7  = XM8 (909000085)
+    8  = Famas (909000090)
+    9  = UMP (909000098)
+    10 = M1887 (909035007)
+    11 = Woodpecker (909042008)
+    12 = Groza (909041005)
+    13 = M4A1 (909033001)
+    14 = Thompson (909038010)
+    15 = G18 (909038012)
+    16 = Parafal (909045001)
+    17 = P90 (909049010)
+    Características:
+    - Envía el emote 5 veces para asegurar funcionamiento
+    - Verifica conexión del socket antes de enviar
+    - Logging detallado
+
+25. /nm <UID> <EmoteID>
+    Descripción: Spam rápido de emote (ataque)
+    Uso: /nm 12345678 909000063
+       /nm 12345678 98765432 909000063
+    Estado: ✅ FUNCIONAL
+    Características:
+    - Envía el emote 200 veces rápidamente
+    - Soporta múltiples UIDs
+    - Delay de 0.08 segundos entre repeticiones
+    - Útil para "ataques" de emotes
+
+───────────────────────────────────────────────────────────────────────────────
+CATEGORÍA 5: INTERACCIÓN SOCIAL
+───────────────────────────────────────────────────────────────────────────────
+
+26. /likes <UID>
+    Descripción: Agregar 100 likes a una cuenta
+    Uso: /likes 12345678
+    Estado: ✅ FUNCIONAL
+    Nota: Usa API externa para enviar los likes
+
+27. /visit <UID>
+    Descripción: Enviar 1000 visitas a un perfil
+    Uso: /visit 12345678
+    Estado: ✅ FUNCIONAL
+    Nota: Usa API externa para enviar las visitas
+
+28. /room <UID>
+    Descripción: Enviar solicitud de unión a sala del jugador
+    Uso: /room 12345678
+    Estado: ✅ FUNCIONAL
+    Nota: Solo funciona si el jugador está en una sala
+
+───────────────────────────────────────────────────────────────────────────────
+CATEGORÍA 6: COMANDOS ESPECIALES
+───────────────────────────────────────────────────────────────────────────────
+
+29. /ai <texto>
+    Descripción: Chat con IA usando Gemini 1.5 Flash
+    Uso: /ai ¿Cuál es el mejor arma en Free Fire?
+       /ai Hola, cómo estás?
+    Estado: ✅ FUNCIONAL
+    Características:
+    - Usa API de Google Gemini
+    - Responde con texto generado por IA
+    - Útil para conversaciones y preguntas
+
+30. hola / hello / hi (sin "/")
+    Descripción: Respuesta automática de saludo
+    Uso: hola
+       hello
+       hi
+    Estado: ✅ FUNCIONAL
+    Respuesta: "hola como estas te quiero"
+    Nota: Comando de texto (sin "/"), funciona con variaciones como "hola!", "hello!", "hi!"
+
+───────────────────────────────────────────────────────────────────────────────
+CATEGORÍA 7: COMANDOS ABREVIADOS (DETECCIÓN AUTOMÁTICA DE UID)
+───────────────────────────────────────────────────────────────────────────────
+
+NOTA IMPORTANTE: Estos comandos detectan automáticamente tu UID si no lo especificas.
+Esto hace que sean mucho más fáciles y rápidos de usar.
+
+31. /e <número>
+    Descripción: Emote evolutiva (detecta UID automáticamente)
+    Uso: /e 10
+       /e 1
+    Estado: ✅ FUNCIONAL
+    Equivale a: /ev [tu_uid] <número>
+    Características:
+    - Detecta automáticamente tu UID
+    - Solo necesitas escribir el número del emote (1-17)
+    - Envía el emote 5 veces para asegurar funcionamiento
+    Ejemplo: /e 10 → Envía emote evolutiva #10 (M1887) a ti mismo
+
+32. /p <número>
+    Descripción: Play emote por número (detecta UID automáticamente)
+    Uso: /p 50
+       /p 100
+    Estado: ✅ FUNCIONAL
+    Equivale a: /play [tu_uid] <número>
+    Características:
+    - Detecta automáticamente tu UID
+    - Usa emotes.json para buscar el emote
+    - Espera 5 segundos para completar el emote
+    Ejemplo: /p 50 → Reproduce emote #50 a ti mismo
+
+33. /n <emote_id>
+    Descripción: Spam de emote (detecta UID automáticamente)
+    Uso: /n 909000063
+    Estado: ✅ FUNCIONAL
+    Equivale a: /nm [tu_uid] <emote_id>
+    Características:
+    - Detecta automáticamente tu UID
+    - Envía el emote 200 veces rápidamente
+    - Útil para "ataques" de emotes
+    Ejemplo: /n 909000063 → Spam de emote AK a ti mismo
+
+34. /i [UID]
+    Descripción: Invitar a squad (UID opcional)
+    Uso: /i
+       /i 12345678
+    Estado: ✅ FUNCIONAL
+    Equivale a: /inv [UID] 5
+    Características:
+    - Si no especificas UID, invita a ti mismo
+    - Crea squad de 5 jugadores automáticamente
+    - Invita al objetivo y a ti mismo
+    Ejemplo: /i → Invita a ti mismo al squad
+
+35. /s [UID]
+    Descripción: Spam de solicitudes de amistad (UID opcional)
+    Uso: /s
+       /s 12345678
+    Estado: ✅ FUNCIONAL
+    Equivale a: /spam [UID]
+    Características:
+    - Si no especificas UID, spam a ti mismo
+    - Envía solicitudes de amistad masivas
+    Ejemplo: /s → Spam de amistad a ti mismo
+
+36. /v [UID]
+    Descripción: Enviar visitas (UID opcional)
+    Uso: /v
+       /v 12345678
+    Estado: ✅ FUNCIONAL
+    Equivale a: /visit [UID]
+    Características:
+    - Si no especificas UID, visitas a ti mismo
+    - Envía 1000 visitas al perfil
+    Ejemplo: /v → Envía 1000 visitas a tu perfil
+
+37. /lk [UID]
+    Descripción: Agregar likes (UID opcional)
+    Uso: /lk
+       /lk 12345678
+    Estado: ✅ FUNCIONAL
+    Equivale a: /likes [UID]
+    Características:
+    - Si no especificas UID, likes a ti mismo
+    - Agrega 100 likes a la cuenta
+    Ejemplo: /lk → Agrega 100 likes a tu cuenta
+
+38. /inf [UID]
+    Descripción: Información de jugador (UID opcional)
+    Uso: /inf
+       /inf 12345678
+    Estado: ✅ FUNCIONAL
+    Equivale a: /info [UID]
+    Características:
+    - Si no especificas UID, muestra tu información
+    - Muestra nombre, nivel, likes, rango, guild, etc.
+    Ejemplo: /inf → Muestra tu información completa
+
+39. /j <TeamCode>
+    Descripción: Unirse a sala (abreviado)
+    Uso: /j ABC123
+    Estado: ✅ FUNCIONAL
+    Equivale a: /join <TeamCode>
+    Características:
+    - Comando más corto que /join
+    - Se une a la sala especificada
+    Ejemplo: /j ABC123 → Se une a la sala ABC123
+
+40. /a <TeamCode>
+    Descripción: Atacar sala (abreviado)
+    Uso: /a ABC123
+    Estado: ✅ FUNCIONAL
+    Equivale a: /attack <TeamCode>
+    Características:
+    - Comando más corto que /attack
+    - Ataque durante 45 segundos
+    Ejemplo: /a ABC123 → Ataca la sala ABC123
+
+41. /t [UID]
+    Descripción: Team spam (UID opcional)
+    Uso: /t
+       /t 12345678
+    Estado: ✅ FUNCIONAL
+    Equivale a: /team [UID]
+    Características:
+    - Si no especificas UID, spam a ti mismo
+    - Spam de invitaciones durante 10 segundos
+    Ejemplo: /t → Team spam a ti mismo durante 10 segundos
+
+───────────────────────────────────────────────────────────────────────────────
+RESUMEN DE COMANDOS FUNCIONALES
+───────────────────────────────────────────────────────────────────────────────
+
+Total de comandos funcionales: 41 (30 originales + 11 abreviados)
+
+Por categoría:
+- Información y Ayuda: 4 comandos
+- Squad/Grupo: 9 comandos
+- Spam/Ataque: 8 comandos
+- Emotes: 4 comandos
+- Interacción Social: 3 comandos
+- Comandos Especiales: 2 comandos
+- Comandos Abreviados: 11 comandos
+
+───────────────────────────────────────────────────────────────────────────────
+VENTAJAS DE LOS COMANDOS ABREVIADOS
+───────────────────────────────────────────────────────────────────────────────
+
+✅ DETECCIÓN AUTOMÁTICA DE UID:
+   - No necesitas escribir tu UID
+   - Los comandos detectan automáticamente quién los ejecuta
+   - Más rápido y fácil de usar
+
+✅ COMANDOS MÁS CORTOS:
+   - Menos caracteres que escribir
+   - Más rápido de tipear
+   - Menos errores de tipeo
+
+✅ COMPATIBILIDAD:
+   - Los comandos originales siguen funcionando
+   - Puedes usar cualquiera de las dos versiones
+   - Flexibilidad total
+
+EJEMPLOS DE USO:
+   /e 10          → Emote evolutiva #10 a ti mismo
+   /p 50          → Emote #50 a ti mismo
+   /n 909000063   → Spam emote a ti mismo
+   /i             → Invitar a ti mismo al squad
+   /s             → Spam de amistad a ti mismo
+   /v             → Visitas a ti mismo
+   /lk            → Likes a ti mismo
+   /inf           → Tu información
+   /j ABC123      → Unirse a sala ABC123
+   /a ABC123      → Atacar sala ABC123
+   /t             → Team spam a ti mismo
+
+═══════════════════════════════════════════════════════════════════════════════
+                    PARTE 2: COMANDOS MENCIONADOS PERO NO IMPLEMENTADOS
+═══════════════════════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────────────────────
+COMANDOS EN /help PERO NO IMPLEMENTADOS
+───────────────────────────────────────────────────────────────────────────────
+
+1. /like [UID]
+   Estado: ❌ NO IMPLEMENTADO
+   Mencionado en: /help (línea 2534)
+   Comando real equivalente: /likes [UID] (SÍ está implementado)
+   
+   Por qué no está implementado:
+   - El comando real es /likes (con 's'), no /like
+   - Probablemente fue un error de tipeo en el mensaje de ayuda
+   - El comando /likes SÍ funciona correctamente
+   
+   Para qué serviría:
+   - Sería un alias más corto para /likes
+   - Mejoraría la usabilidad (menos caracteres)
+   
+   Dificultad de implementación: ⭐ FÁCIL
+   - Solo necesitaría agregar un alias que llame a la misma función de /likes
+
+───────────────────────────────────────────────────────────────────────────────
+
+2. /em [uid] [emote id]
+   Estado: ❌ NO IMPLEMENTADO
+   Mencionado en: /help (línea 2578)
+   Comando real equivalente: /play [uid] [emote id] (SÍ está implementado)
+   
+   Por qué no está implementado:
+   - Parece ser un alias planeado para /play con emote_id directo
+   - El código tiene dos implementaciones de /play que hacen lo mismo
+   - Probablemente se planeó crear /em como versión simplificada pero no se completó
+   
+   Para qué serviría:
+   - Sería un comando más corto y directo para emotes con ID
+   - Diferencia clara entre:
+     * /play [uid] [número] → usa emotes.json
+     * /em [uid] [emote_id] → usa ID directo
+   - Mejoraría la organización de comandos
+   
+   Dificultad de implementación: ⭐ FÁCIL
+   - Podría usar la misma lógica de /play pero sin cargar emotes.json
+   - Solo necesitaría validar que el emote_id sea numérico
+
+───────────────────────────────────────────────────────────────────────────────
+COMANDOS QUE PODRÍAN SER ÚTILES PERO NO ESTÁN IMPLEMENTADOS
+───────────────────────────────────────────────────────────────────────────────
+
+3. /kick [UID]
+   Estado: ❌ NO IMPLEMENTADO
+   Mencionado en: Ningún lugar (sugerencia)
+   
+   Para qué serviría:
+   - Expulsar a un jugador del squad actual
+   - Útil para moderación de squads
+   - Control sobre quién está en el grupo
+   
+   Dificultad de implementación: ⭐⭐ MEDIA
+   - Requeriría crear un paquete protobuf para expulsar jugadores
+   - Necesitaría conocer la estructura del paquete de kick
+   - Depende de los permisos del bot en el squad
+
+───────────────────────────────────────────────────────────────────────────────
+
+4. /ban [UID]
+   Estado: ❌ NO IMPLEMENTADO
+   Mencionado en: Ningún lugar (sugerencia)
+   
+   Para qué serviría:
+   - Bloquear a un jugador para que no pueda unirse al squad
+   - Sistema de lista negra
+   - Prevenir que jugadores problemáticos se unan
+   
+   Dificultad de implementación: ⭐⭐⭐ DIFÍCIL
+   - Requeriría sistema de almacenamiento (archivo/BD) para lista negra
+   - Necesitaría verificar la lista antes de aceptar invitaciones
+   - Implementar lógica de auto-rechazo
+
+───────────────────────────────────────────────────────────────────────────────
+
+5. /whitelist [add/remove/list] [UID]
+   Estado: ❌ NO IMPLEMENTADO
+   Mencionado en: Ningún lugar (sugerencia)
+   
+   Para qué serviría:
+   - Controlar quién puede usar comandos del bot
+   - Seguridad: solo usuarios autorizados
+   - Prevenir uso no autorizado del bot
+   
+   Dificultad de implementación: ⭐⭐ MEDIA
+   - Requeriría archivo JSON o base de datos para almacenar whitelist
+   - Verificar UID antes de ejecutar cada comando
+   - Sistema de permisos (admin, usuario normal)
+
+───────────────────────────────────────────────────────────────────────────────
+
+6. /emotelist [número]
+   Estado: ❌ NO IMPLEMENTADO
+   Mencionado en: Ningún lugar (sugerencia)
+   
+   Para qué serviría:
+   - Listar todos los emotes disponibles
+   - Buscar emote por nombre o número
+   - Ver información de un emote específico
+   - Ayudar a usuarios a encontrar el emote correcto
+   
+   Dificultad de implementación: ⭐ FÁCIL
+   - Leer emotes.json
+   - Formatear y mostrar la lista
+   - Opcional: búsqueda por nombre
+
+───────────────────────────────────────────────────────────────────────────────
+
+7. /favorite [add/remove/list] [emote_id o número]
+   Estado: ❌ NO IMPLEMENTADO
+   Mencionado en: Ningún lugar (sugerencia)
+   
+   Para qué serviría:
+   - Guardar emotes favoritos del usuario
+   - Acceso rápido a emotes usados frecuentemente
+   - Personalización del bot
+   
+   Dificultad de implementación: ⭐⭐ MEDIA
+   - Requeriría almacenamiento por UID (archivo JSON)
+   - Sistema de gestión de favoritos
+   - Comando para usar favoritos rápidamente
+
+───────────────────────────────────────────────────────────────────────────────
+
+8. /sequence [UID] [emote1] [emote2] [emote3] ...
+   Estado: ❌ NO IMPLEMENTADO
+   Mencionado en: Ningún lugar (sugerencia)
+   
+   Para qué serviría:
+   - Reproducir múltiples emotes en secuencia
+   - Crear "rutinas" de emotes
+   - Animaciones personalizadas
+   
+   Dificultad de implementación: ⭐⭐ MEDIA
+   - Ejecutar /play múltiples veces en secuencia
+   - Delay entre cada emote
+   - Validar que todos los emotes existan
+
+───────────────────────────────────────────────────────────────────────────────
+
+9. /autoaccept [on/off] [UID]
+   Estado: ❌ NO IMPLEMENTADO
+   Mencionado en: Ningún lugar (sugerencia)
+   
+   Para qué serviría:
+   - Auto-aceptar invitaciones de ciertos jugadores
+   - No perder tiempo aceptando manualmente
+   - Útil para jugadores frecuentes
+   
+   Dificultad de implementación: ⭐⭐⭐ DIFÍCIL
+   - Requeriría monitorear paquetes de invitación
+   - Sistema de lista de UIDs permitidos
+   - Lógica de auto-aceptación en tiempo real
+
+───────────────────────────────────────────────────────────────────────────────
+
+10. /autoreject [on/off] [UID]
+    Estado: ❌ NO IMPLEMENTADO
+    Mencionado en: Ningún lugar (sugerencia)
+    
+    Para qué serviría:
+    - Auto-rechazar invitaciones de ciertos jugadores
+    - Evitar spam de invitaciones
+    - Lista negra automática
+    
+    Dificultad de implementación: ⭐⭐⭐ DIFÍCIL
+    - Similar a /autoaccept pero para rechazo
+    - Sistema de lista negra
+    - Lógica de auto-rechazo en tiempo real
+
+───────────────────────────────────────────────────────────────────────────────
+
+11. /notify [on/off]
+    Estado: ❌ NO IMPLEMENTADO
+    Mencionado en: Ningún lugar (sugerencia)
+    
+    Para qué serviría:
+    - Notificaciones cuando alguien se une/sale del squad
+    - Alertas de eventos importantes
+    - Mejor seguimiento de actividad
+    
+    Dificultad de implementación: ⭐⭐ MEDIA
+    - Monitorear eventos del squad
+    - Enviar mensajes cuando ocurren eventos
+    - Sistema de configuración on/off
+
+───────────────────────────────────────────────────────────────────────────────
+
+12. /stats
+    Estado: ❌ NO IMPLEMENTADO
+    Mencionado en: Ningún lugar (sugerencia)
+    
+    Para qué serviría:
+    - Estadísticas de uso del bot
+    - Contador de comandos ejecutados
+    - Tiempo de actividad
+    - Historial de acciones
+    
+    Dificultad de implementación: ⭐⭐ MEDIA
+    - Sistema de contadores
+    - Almacenamiento de estadísticas
+    - Formateo y presentación de datos
+
+───────────────────────────────────────────────────────────────────────────────
+
+13. /ping
+    Estado: ❌ NO IMPLEMENTADO
+    Mencionado en: Ningún lugar (sugerencia)
+    
+    Para qué serviría:
+    - Verificar latencia del bot
+    - Comprobar que el bot está respondiendo
+    - Diagnóstico de conexión
+    
+    Dificultad de implementación: ⭐ FÁCIL
+    - Medir tiempo de respuesta
+    - Enviar mensaje con latencia
+    - Verificar conexiones de socket
+
+───────────────────────────────────────────────────────────────────────────────
+
+14. /time
+    Estado: ❌ NO IMPLEMENTADO
+    Mencionado en: Ningún lugar (sugerencia)
+    
+    Para qué serviría:
+    - Mostrar hora actual
+    - Útil para coordinación
+    - Referencia temporal
+    
+    Dificultad de implementación: ⭐ MUY FÁCIL
+    - Usar datetime para obtener hora
+    - Formatear y enviar mensaje
+
+───────────────────────────────────────────────────────────────────────────────
+
+15. /config [opción] [valor]
+    Estado: ❌ NO IMPLEMENTADO
+    Mencionado en: Ningún lugar (sugerencia)
+    
+    Para qué serviría:
+    - Configurar opciones del bot
+    - Personalizar comportamiento
+    - Ajustar delays, repeticiones, etc.
+    
+    Dificultad de implementación: ⭐⭐⭐ DIFÍCIL
+    - Sistema de configuración persistente
+    - Validación de valores
+    - Almacenamiento en archivo/BD
+
+───────────────────────────────────────────────────────────────────────────────
+RESUMEN DE COMANDOS NO IMPLEMENTADOS
+───────────────────────────────────────────────────────────────────────────────
+
+Total de comandos mencionados pero no implementados: 2
+Total de comandos sugeridos (no mencionados): 13
+
+Por dificultad:
+- ⭐ MUY FÁCIL: 1 comando
+- ⭐ FÁCIL: 3 comandos
+- ⭐⭐ MEDIA: 6 comandos
+- ⭐⭐⭐ DIFÍCIL: 5 comandos
+
+═══════════════════════════════════════════════════════════════════════════════
+                    NOTAS FINALES
+═══════════════════════════════════════════════════════════════════════════════
+
+- Los comandos funcionales están completamente implementados y probados
+- Los comandos no implementados son sugerencias basadas en funcionalidades
+  comunes en bots similares
+- La dificultad está basada en la complejidad técnica estimada
+- Algunos comandos no implementados podrían requerir cambios en la estructura
+  del código actual
+
+───────────────────────────────────────────────────────────────────────────────
+                    ACTUALIZACIÓN: COMANDOS ABREVIADOS
+───────────────────────────────────────────────────────────────────────────────
+
+FECHA DE ACTUALIZACIÓN: Última versión
+NUEVOS COMANDOS: 11 comandos abreviados agregados
+
+Los comandos abreviados fueron implementados para facilitar el uso del bot:
+- Detección automática de UID del remitente
+- Comandos más cortos y fáciles de recordar
+- Compatibilidad total con comandos originales
+
+Los comandos abreviados más útiles:
+- /e <número> - Emote evolutiva (más usado)
+- /p <número> - Play emote
+- /n <emote_id> - Spam emote
+- /i [UID] - Invitar a squad
+- /s [UID] - Spam amistad
+- /v [UID] - Visitas
+- /lk [UID] - Likes
+- /inf [UID] - Info jugador
+- /j <TeamCode> - Join sala
+- /a <TeamCode> - Attack sala
+- /t [UID] - Team spam
+
+═══════════════════════════════════════════════════════════════════════════════
+                    FIN DEL DOCUMENTO
+═══════════════════════════════════════════════════════════════════════════════
+
