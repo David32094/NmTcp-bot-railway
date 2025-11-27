@@ -34,11 +34,12 @@ from byte import*
 
 # --- START: Gemini AI Integration ---
 GEMINI_API_KEY = "AIzaSyB9TsNdahfnFRhx5iX5wlTuqAaFV6uz4q8"
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+GEMINI_MODEL = "gemini-2.5-flash-preview-05-20"
+GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 
 def get_gemini_response(user_message):
     """
-    Envía un mensaje a Gemini Flash 1.5 y obtiene la respuesta.
+    Envía un mensaje a Gemini 2.5 Flash Preview y obtiene la respuesta.
     """
     global http_session
     try:
@@ -2712,8 +2713,11 @@ everything ok
                                 ]
                             }
                             global http_session
+                            # Usar el mismo modelo de Gemini configurado globalmente
+                            gemini_model = GEMINI_MODEL if 'GEMINI_MODEL' in globals() else "gemini-2.5-flash-preview-05-20"
+                            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent?key=AIzaSyDZvi8G_tnMUx7loUu51XYBt3t9eAQQLYo"
                             response = http_session.post(
-                                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDZvi8G_tnMUx7loUu51XYBt3t9eAQQLYo",
+                                gemini_url,
                                 headers=headers,
                                 json=payload,
                                 timeout=30
