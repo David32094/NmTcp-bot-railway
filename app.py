@@ -33,13 +33,13 @@ from important_zitado import*
 from byte import*
 
 # --- START: Gemini AI Integration ---
+GEMINI_MODEL = "gemini-2.5-flash"
 GEMINI_API_KEY = "AIzaSyB9TsNdahfnFRhx5iX5wlTuqAaFV6uz4q8"
-GEMINI_MODEL = "gemini-2.5-flash-preview-05-20"
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 
 def get_gemini_response(user_message):
     """
-    Envía un mensaje a Gemini 2.5 Flash Preview y obtiene la respuesta.
+    Envía un mensaje a Gemini Flash 1.5 y obtiene la respuesta.
     """
     global http_session
     try:
