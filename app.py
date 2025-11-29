@@ -2730,7 +2730,7 @@ everything ok
 #-------------------------------------------------------------#
                 if '1200' in data.hex()[0:4] and b'/join' in data:
                     try:
-                        # Split the incoming data using the new command '/join tc'
+                        # Split the incoming data using the new command '/join tc '
                         split_data = re.split(rb'/join', data)
                         json_result = get_available_room(data.hex()[10:])
                         parsed_data = json.loads(json_result)
