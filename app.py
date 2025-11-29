@@ -33,9 +33,8 @@ from important_zitado import*
 from byte import*
 
 # --- START: Gemini AI Integration ---
-GEMINI_MODEL = "gemini-2.5-flash"
 GEMINI_API_KEY = "AIzaSyB9TsNdahfnFRhx5iX5wlTuqAaFV6uz4q8"
-GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 
 def get_gemini_response(user_message):
     """
@@ -122,7 +121,8 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler(sys.stdout)  # Solo STDOUT para Railway
+        logging.FileHandler("bot_activity.log", encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
     ]
 )
 # --- END: Added for improved error handling and logging ---
@@ -144,7 +144,6 @@ data22 = None
 isroom = False
 isroom2 = False
 http_session = None  # Persistent HTTP session for connection pooling
-bot_start_time = time.time()  # Para calcular uptime en health check
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 def encrypt_packet(plain_text, key, iv):
     plain_text = bytes.fromhex(plain_text)
@@ -747,19 +746,18 @@ def restart_program():
     logging.info("Esperando 3 segundos antes de reiniciar...")
     time.sleep(3)
     
-    # Intentar cerrar conexiones HTTP de forma segura
     try:
-        global http_session
-        if http_session:
+        p = psutil.Process(os.getpid())
+        # Close open file descriptors safely
+        for handler in p.open_files() + p.connections():
             try:
-                http_session.close()
-            except:
+                if hasattr(handler, 'fd') and handler.fd >= 0:
+                    os.close(handler.fd)
+            except (OSError, ValueError, AttributeError) as e:
+                # Ignore errors for invalid or already closed descriptors
                 pass
-    except:
-        pass
-    
-    # NO intentar cerrar descriptores de archivo manualmente - causa errores OSError
-    # Python y el sistema operativo los cerrarán automáticamente al terminar el proceso
+    except Exception as e:
+        logging.error(f"Error during pre-restart cleanup: {e}")
     
     # Replace the current process with a new instance of the script
     try:
@@ -1431,11 +1429,8 @@ everything ok
         while True:
             try:
                 # --- START: Added for periodic restart ---
-                # Deshabilitado en Railway - causa problemas con reinicios frecuentes
-                # En Railway, el servicio debe mantenerse activo sin reinicios programados
-                RESTART_INTERVAL = int(os.environ.get('RESTART_INTERVAL', 86400))  # Default: 24 horas (86400 segundos)
-                if RESTART_INTERVAL > 0 and time.time() - self.start_time > RESTART_INTERVAL:
-                    logging.warning(f"Scheduled restart after {RESTART_INTERVAL} seconds from sockf1.")
+                if time.time() - self.start_time > 600: # 10 minutes * 60 seconds
+                    logging.warning("Scheduled 10-minute restart from sockf1.")
                     restart_program()
                 # --- END: Added for periodic restart ---
 
@@ -1580,11 +1575,8 @@ everything ok
 
         while True:
             # --- START: Added for periodic restart and error handling ---
-            # Deshabilitado en Railway - causa problemas con reinicios frecuentes
-            # En Railway, el servicio debe mantenerse activo sin reinicios programados
-            RESTART_INTERVAL = int(os.environ.get('RESTART_INTERVAL', 86400))  # Default: 24 horas (86400 segundos)
-            if RESTART_INTERVAL > 0 and time.time() - self.start_time > RESTART_INTERVAL:
-                logging.warning(f"Scheduled restart after {RESTART_INTERVAL} seconds from connect loop.")
+            if time.time() - self.start_time > 600: # 10 minutes * 60 seconds
+                logging.warning("Scheduled 10-minute restart from connect loop.")
                 restart_program()
             
             try:
@@ -2713,11 +2705,8 @@ everything ok
                                 ]
                             }
                             global http_session
-                            # Usar el mismo modelo de Gemini configurado globalmente
-                            gemini_model = GEMINI_MODEL if 'GEMINI_MODEL' in globals() else "gemini-2.5-flash"
-                            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent?key=AIzaSyDZvi8G_tnMUx7loUu51XYBt3t9eAQQLYo"
                             response = http_session.post(
-                                gemini_url,
+                                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDZvi8G_tnMUx7loUu51XYBt3t9eAQQLYo",
                                 headers=headers,
                                 json=payload,
                                 timeout=30
@@ -4298,25 +4287,6 @@ class PanelHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 logging.error(f"[PANEL] Error en GET /api/status: {e}")
                 self.send_response(500)
                 self.end_headers()
-        elif self.path == '/health' or self.path == '/':
-            # Health check endpoint para Railway (mantiene el servicio activo)
-            try:
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                health_response = {
-                    "status": "ok",
-                    "service": "david-ia-bot",
-                    "timestamp": time.time(),
-                    "uptime": time.time() - bot_start_time if 'bot_start_time' in globals() else 0
-                }
-                self.wfile.write(json_module.dumps(health_response).encode('utf-8'))
-                logging.info(f"[HEALTH] Health check recibido - Servicio activo")
-            except Exception as e:
-                logging.error(f"[HEALTH] Error en health check: {e}")
-                self.send_response(500)
-                self.end_headers()
         else:
             self.send_response(404)
             self.end_headers()
@@ -4365,78 +4335,88 @@ class PanelHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         """Suprimir logs de HTTP server (ya tenemos logging propio)"""
         pass
 
-def iniciar_servidor_http():
-    """
-    Arranca el servidor HTTP para el panel en el thread principal.
-    Usa el puerto dinámico de Railway.
-    IMPORTANTE: Esta función debe correr en el thread principal, NO en un daemon thread.
-    """
-    global panel_server_started
+def start_panel_server(port=3000, max_retries=3):
+    """Inicia el servidor HTTP para el panel en un thread separado"""
+    global panel_server_started, panel_server_thread
     
-    # Leer puerto de variable de entorno PORT (Railway lo asigna automáticamente)
-    # IMPORTANTE: Railway asigna el puerto dinámicamente, este default es solo para desarrollo local
-    port = int(os.environ.get('PORT', 8080))
-    logging.info(f"[PANEL] Iniciando servidor HTTP en puerto {port}")
+    # Si el servidor ya está iniciado y vivo, no hacer nada
+    if panel_server_started and panel_server_thread and panel_server_thread.is_alive():
+        logging.info(f"[PANEL] Servidor HTTP ya está corriendo (thread activo)")
+        return panel_server_thread
     
+    # Verificar si el puerto está disponible antes de intentar iniciar
     try:
-        # Crear servidor con SO_REUSEADDR para permitir reutilización del puerto
-        class ReusableTCPServer(socketserver.TCPServer):
-            allow_reuse_address = True
+        test_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        test_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        test_socket.settimeout(1)
+        result = test_socket.connect_ex(('localhost', port))
+        test_socket.close()
         
-        httpd = ReusableTCPServer(("0.0.0.0", port), PanelHTTPRequestHandler)
-        
-        logging.info(f"[PANEL] Servidor HTTP iniciado en puerto {port}")
-        logging.info(f"[PANEL] Panel web puede conectarse a: https://web-production-ddaf8.up.railway.app/api/send-command")
-        logging.info(f"[PANEL] Health check disponible en: https://web-production-ddaf8.up.railway.app/health")
-        panel_server_started = True
-        
-        # Iniciar keep-alive loop en un thread daemon separado
-        try:
-            start_keep_alive_loop()
-        except Exception as e:
-            logging.warning(f"[KEEP-ALIVE] No se pudo iniciar keep-alive: {e}")
-        
-        # serve_forever() bloquea el thread principal - esto es correcto
-        # Railway necesita que el proceso principal esté activo
-        httpd.serve_forever()
-        
-    except OSError as e:
-        error_str = str(e)
-        if "10048" in error_str or "address already in use" in error_str.lower() or "10060" in error_str:
-            logging.error(f"[PANEL] Puerto {port} ya está en uso. No se puede iniciar el servidor HTTP.")
-            logging.error(f"[PANEL] Esto puede causar que el bot no responda a requests del panel.")
-            raise
-        else:
-            logging.error(f"[PANEL] Error iniciando servidor HTTP en puerto {port}: {e}")
-            raise
+        if result == 0:
+            # El puerto está en uso (probablemente por una instancia anterior)
+            logging.info(f"[PANEL] Puerto {port} ya está en uso. Asumiendo que el servidor HTTP ya está corriendo.")
+            logging.info(f"[PANEL] Panel web puede conectarse a: http://localhost:{port}/api/send-command")
+            panel_server_started = True
+            # Crear un thread dummy para indicar que el servidor está "activo"
+            panel_server_thread = threading.Thread(target=lambda: None, daemon=True)
+            panel_server_thread.start()
+            return panel_server_thread
     except Exception as e:
-        logging.error(f"[PANEL] Error inesperado iniciando servidor HTTP: {e}")
-        raise
-
-def start_keep_alive_loop():
-    """Envía requests HTTP periódicos para mantener el servicio activo en Railway"""
-    import urllib.request
+        logging.debug(f"[PANEL] No se pudo verificar puerto: {e}")
     
-    def keep_alive():
-        while True:
+    def run_server():
+        global panel_server_started
+        current_port = port
+        
+        for attempt in range(max_retries):
             try:
-                time.sleep(60)  # Cada 60 segundos (1 minuto)
-                # Hacer un request a nuestro propio health check
-                try:
-                    port = int(os.environ.get('PORT', 8080))
-                    url = f"http://localhost:{port}/health"
-                    urllib.request.urlopen(url, timeout=5)
-                    logging.debug("[KEEP-ALIVE] Health check interno enviado")
-                except Exception as e:
-                    logging.debug(f"[KEEP-ALIVE] Error en keep-alive interno: {e}")
+                # Intentar con el puerto especificado o uno alternativo
+                test_port = current_port + attempt if attempt > 0 else current_port
+                
+                # Crear servidor con SO_REUSEADDR para permitir reutilización del puerto
+                # Usar una clase personalizada que permita reutilizar la dirección
+                class ReusableTCPServer(socketserver.TCPServer):
+                    allow_reuse_address = True
+                
+                httpd = ReusableTCPServer(("", test_port), PanelHTTPRequestHandler)
+                
+                logging.info(f"[PANEL] Servidor HTTP iniciado en puerto {test_port}")
+                logging.info(f"[PANEL] Panel web puede conectarse a: http://localhost:{test_port}/api/send-command")
+                panel_server_started = True
+                httpd.serve_forever()
+                break
+                
+            except OSError as e:
+                error_str = str(e)
+                if "10048" in error_str or "address already in use" in error_str.lower() or "10060" in error_str:
+                    if attempt < max_retries - 1:
+                        logging.warning(f"[PANEL] Puerto {test_port} ocupado, intentando puerto {test_port + 1}...")
+                        continue
+                    else:
+                        # Si todos los puertos están ocupados, asumir que ya hay un servidor corriendo
+                        logging.info(f"[PANEL] Puerto {test_port} y alternativos ocupados. Asumiendo que el servidor HTTP ya está corriendo.")
+                        logging.info(f"[PANEL] Panel web puede conectarse a: http://localhost:{test_port}/api/send-command")
+                        panel_server_started = True
+                        # No iniciar servidor, pero marcar como "activo" para que el bot continúe
+                        break
+                else:
+                    logging.warning(f"[PANEL] Error iniciando servidor HTTP en puerto {test_port}: {e}")
+                    if attempt < max_retries - 1:
+                        continue
+                    else:
+                        panel_server_started = False
+                        break
             except Exception as e:
-                logging.error(f"[KEEP-ALIVE] Error en loop de keep-alive: {e}")
-                time.sleep(60)
+                logging.warning(f"[PANEL] Error inesperado iniciando servidor HTTP: {e}")
+                if attempt < max_retries - 1:
+                    continue
+                else:
+                    panel_server_started = False
+                    break
     
-    keep_alive_thread = threading.Thread(target=keep_alive, daemon=True)
-    keep_alive_thread.start()
-    logging.info("[KEEP-ALIVE] Keep-alive loop iniciado")
-    return keep_alive_thread
+    panel_server_thread = threading.Thread(target=run_server, daemon=True)
+    panel_server_thread.start()
+    return panel_server_thread
 # --- END: HTTP Server for Panel Integration ---
 
 # --- START: Modified for robust execution and restart ---
@@ -4505,73 +4485,55 @@ if __name__ == "__main__":
     http_session.mount('https://', adapter)
     logging.info("HTTP session initialized with connection pooling.")
     
-    def iniciar_bot():
-        """
-        Función principal del bot que se ejecuta en un thread daemon.
-        Si crashea, NO cierra el proceso principal (el servidor HTTP sigue funcionando).
-        """
-        try:
-            logging.info("[BOT] Iniciando bot en thread daemon...")
-            
-            while True:  # Loop de reinicio del bot
-                try:
-                    logging.info("[BOT] Main execution block started.")
-                    # Your original threading logic
-                    for i in range(num_threads):
-                        ids_for_thread = ids_passwords[i % num_clients]
-                        id_val, password_val = ids_for_thread
-                        # The FF_CLIENT init starts the connection logic, which is run in a new thread inside the connect method.
-                        # The primary thread for each client is created inside its `connect` method.
-                        # This main thread's purpose is to kick off the clients.
-                        run_client(id_val, password_val)
-                        time.sleep(3)  # Stagger client startups
-
-                    # Keep the main script alive by joining the threads that were created.
-                    # The threads list is populated inside the connect method.
-                    logging.info(f"[BOT] All {len(threads)} client threads initiated. Main thread will now wait.")
-                    for thread in threads:
-                        thread.join()
-
-                except KeyboardInterrupt:
-                    logging.info("[BOT] Shutdown signal received. Exiting bot thread.")
-                    if http_session:
-                        http_session.close()
-                    break
-                except Exception as e:
-                    logging.critical(f"[BOT] A critical error occurred in the main execution block: {e}")
-                    logging.error(f"[BOT] Error details: {type(e).__name__}: {str(e)}")
-                    import traceback
-                    logging.error(f"[BOT] Traceback: {traceback.format_exc()}")
-                    
-                    # En lugar de reiniciar inmediatamente, esperar más tiempo
-                    logging.info("[BOT] Esperando 10 segundos antes de reintentar...")
-                    if http_session:
-                        try:
-                            http_session.close()
-                        except:
-                            pass
-                    time.sleep(10)
-                    # Continuar el loop para reintentar (NO usar restart_program aquí)
-                    logging.info("[BOT] Reintentando conexión...")
-                    
-        except Exception as e:
-            logging.critical(f"[BOT] Error fatal en thread del bot: {e}")
-            # NO llamar a restart_program() - dejar que el thread termine
-            # El servidor HTTP seguirá funcionando
-    
-    # 1) Bot corriendo en un hilo daemon en segundo plano
-    # Si el bot crashea, NO cierra el proceso principal
-    hilo_bot = threading.Thread(target=iniciar_bot, daemon=True)
-    hilo_bot.start()
-    logging.info("[MAIN] Bot iniciado en thread daemon")
-    
-    # 2) Servidor HTTP en el hilo principal
-    # Este bloquea el thread principal con serve_forever()
-    # Railway necesita que el proceso principal esté activo
+    # Iniciar servidor HTTP para el panel web (solo una vez, fuera del loop de reinicio)
+    # El servidor se mantiene activo incluso si el bot se reinicia
+    # Si el puerto está ocupado, asumimos que ya hay un servidor corriendo
     try:
-        iniciar_servidor_http()
+        start_panel_server(port=3000)
+        # Dar tiempo para que el servidor se inicie (no bloquear si falla)
+        time.sleep(0.3)
     except Exception as e:
-        logging.critical(f"[MAIN] Error fatal iniciando servidor HTTP: {e}")
-        logging.critical(f"[MAIN] El bot no puede funcionar sin el servidor HTTP. Saliendo...")
-        cleanup_lock()
-        sys.exit(1)
+        logging.warning(f"[PANEL] Advertencia al iniciar servidor HTTP: {e}")
+        logging.info(f"[PANEL] El bot continuará funcionando. Si el puerto está ocupado, el servidor anterior seguirá activo.")
+        # No bloquear la ejecución del bot si el servidor HTTP falla
+    
+    while True: # This loop ensures the script will always try to restart on a major crash.
+        try:
+            logging.info("Main execution block started.")
+            # Your original threading logic
+            for i in range(num_threads):
+                ids_for_thread = ids_passwords[i % num_clients]
+                id_val, password_val = ids_for_thread
+                # The FF_CLIENT init starts the connection logic, which is run in a new thread inside the connect method.
+                # The primary thread for each client is created inside its `connect` method.
+                # This main thread's purpose is to kick off the clients.
+                run_client(id_val, password_val)
+                time.sleep(3) # Stagger client startups
+
+            # Keep the main script alive by joining the threads that were created.
+            # The threads list is populated inside the connect method.
+            logging.info(f"All {len(threads)} client threads initiated. Main thread will now wait.")
+            for thread in threads:
+                thread.join()
+
+        except KeyboardInterrupt:
+            logging.info("Shutdown signal received. Exiting.")
+            if http_session:
+                http_session.close()
+            cleanup_lock()
+            break
+        except Exception as e:
+            logging.critical(f"A critical error occurred in the main execution block: {e}")
+            logging.error(f"Error details: {type(e).__name__}: {str(e)}")
+            import traceback
+            logging.error(f"Traceback: {traceback.format_exc()}")
+            
+            # En lugar de reiniciar inmediatamente, esperar más tiempo
+            logging.info("Esperando 10 segundos antes de reiniciar para evitar bucles infinitos...")
+            if http_session:
+                http_session.close()
+            time.sleep(10)
+            
+            # Solo reiniciar si no es un error crítico de conexión repetido
+            # The restart_program() call will replace this process, so the loop continues in a new instance.
+            restart_program()
