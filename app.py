@@ -4506,53 +4506,65 @@ def start_keep_alive_loop():
 # --- START: Modified for robust execution and restart ---
 if __name__ == "__main__":
     # Prevenir múltiples instancias usando un lock file
+    # NOTA: En Railway/Docker, el PID siempre es 1, así que deshabilitamos esta verificación
+    # para evitar que el bot se cierre a sí mismo
     lock_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.bot_lock')
+    current_pid = os.getpid()
     
-    # Verificar si ya hay una instancia corriendo
-    if os.path.exists(lock_file):
-        try:
-            # Leer el PID del archivo lock
-            with open(lock_file, 'r') as f:
-                old_pid = int(f.read().strip())
-            
-            # Verificar si el proceso todavía está corriendo
+    # Solo verificar lock file si NO estamos en Railway/Docker (PID != 1)
+    # En Railway, el proceso principal siempre tiene PID 1
+    if current_pid != 1:
+        # Verificar si ya hay una instancia corriendo
+        if os.path.exists(lock_file):
             try:
-                process = psutil.Process(old_pid)
-                if process.is_running():
-                    logging.warning(f"[INIT] Ya hay una instancia del bot corriendo (PID: {old_pid})")
-                    logging.warning("[INIT] Cerrando esta instancia para evitar conflictos...")
-                    sys.exit(0)
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
-                # El proceso ya no existe, eliminar el lock file
+                # Leer el PID del archivo lock
+                with open(lock_file, 'r') as f:
+                    old_pid = int(f.read().strip())
+                
+                # Si el PID del lock es el mismo que el actual, es el mismo proceso
+                if old_pid == current_pid:
+                    logging.info(f"[INIT] Lock file pertenece a este proceso (PID: {current_pid}), continuando...")
+                else:
+                    # Verificar si el proceso todavía está corriendo
+                    try:
+                        process = psutil.Process(old_pid)
+                        if process.is_running():
+                            logging.warning(f"[INIT] Ya hay una instancia del bot corriendo (PID: {old_pid})")
+                            logging.warning("[INIT] Cerrando esta instancia para evitar conflictos...")
+                            sys.exit(0)
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        # El proceso ya no existe, eliminar el lock file
+                        try:
+                            os.remove(lock_file)
+                        except:
+                            pass
+            except Exception as e:
+                logging.warning(f"[INIT] Error verificando lock file: {e}")
+                # Si hay error, eliminar el lock file y continuar
                 try:
                     os.remove(lock_file)
                 except:
                     pass
+        
+        # Crear el lock file con el PID actual
+        try:
+            with open(lock_file, 'w') as f:
+                f.write(str(current_pid))
         except Exception as e:
-            logging.warning(f"[INIT] Error verificando lock file: {e}")
-            # Si hay error, eliminar el lock file y continuar
+            logging.warning(f"[INIT] No se pudo crear lock file: {e}")
+        
+        # Función para limpiar el lock file al salir
+        def cleanup_lock():
             try:
-                os.remove(lock_file)
+                if os.path.exists(lock_file):
+                    os.remove(lock_file)
             except:
                 pass
-    
-    # Crear el lock file con el PID actual
-    try:
-        with open(lock_file, 'w') as f:
-            f.write(str(os.getpid()))
-    except Exception as e:
-        logging.warning(f"[INIT] No se pudo crear lock file: {e}")
-    
-    # Función para limpiar el lock file al salir
-    def cleanup_lock():
-        try:
-            if os.path.exists(lock_file):
-                os.remove(lock_file)
-        except:
-            pass
-    
-    import atexit
-    atexit.register(cleanup_lock)
+        
+        import atexit
+        atexit.register(cleanup_lock)
+    else:
+        logging.info("[INIT] Ejecutándose en Railway/Docker (PID: 1), lock file deshabilitado")
     
     # Initialize persistent HTTP session for connection pooling
     http_session = requests.Session()
@@ -4659,3 +4671,4 @@ if __name__ == "__main__":
         logging.critical(f"[MAIN] El bot no puede funcionar sin el servidor HTTP. Saliendo...")
         cleanup_lock()
         sys.exit(1)
+
