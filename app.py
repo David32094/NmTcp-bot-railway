@@ -3978,26 +3978,9 @@ everything ok
       
         return token, key, iv
         
-# Configuración de cuentas por región (directamente en el código)
-ACCOUNTS = {
-    'usa': {
-        'uid': '4300429800',
-        'password': 'ED9B88AD1C3F8121EEEF726658278499E8098EA31B2A4493C877252F92555581',
-        'name': 'USA / LATAM Norte'
-    },
-    'brazil': {
-        'uid': '4313688836',
-        'password': 'F968D851949FE0A7A1EC460AC288A2768AE5F1F37958C462014242B0C00E5682',
-        'name': 'Brasil'
-    }
-}
-
-# Variable global para almacenar la región seleccionada
-selected_region = None
-region_selected_event = threading.Event()  # Event para esperar la selección de región
-
-# Inicializar ids_passwords como vacío, se llenará cuando se seleccione la región
-ids_passwords = []
+with open('Nm.txt', 'r') as file:
+    data = json.load(file)
+ids_passwords = list(data.items())
 def run_client(id, password):
     logging.info(f"Starting client for ID: {id}")
     client = FF_CLIENT(id, password)
@@ -4340,54 +4323,7 @@ class PanelHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     
     def do_POST(self):
         """Manejar POST requests del panel"""
-        if self.path == '/api/select-region':
-            """Endpoint para recibir la región seleccionada desde la web"""
-            try:
-                global selected_region, ids_passwords, region_selected_event
-                
-                content_length = int(self.headers['Content-Length'])
-                post_data = self.rfile.read(content_length)
-                data = json_module.loads(post_data.decode('utf-8'))
-                
-                region = data.get('region', 'usa')  # Por defecto USA
-                
-                if region not in ACCOUNTS:
-                    region = 'usa'  # Fallback a USA si la región no es válida
-                
-                selected_region = region
-                account_config = ACCOUNTS[region]
-                
-                # Actualizar ids_passwords con la cuenta seleccionada
-                ids_passwords = [(account_config['uid'], account_config['password'])]
-                
-                logging.info(f"[REGION] Región seleccionada: {account_config['name']} (UID: {account_config['uid']})")
-                
-                # Señalar que la región ha sido seleccionada
-                region_selected_event.set()
-                
-                # Enviar respuesta
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(json_module.dumps({
-                    "success": True,
-                    "message": f"Región seleccionada: {account_config['name']}",
-                    "region": region,
-                    "uid": account_config['uid']
-                }).encode('utf-8'))
-                
-            except Exception as e:
-                logging.error(f"[REGION] Error al seleccionar región: {e}", exc_info=True)
-                self.send_response(500)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(json_module.dumps({
-                    "success": False,
-                    "message": f"Error al seleccionar región: {str(e)}"
-                }).encode('utf-8'))
-        elif self.path == '/api/send-command':
+        if self.path == '/api/send-command':
             try:
                 content_length = int(self.headers['Content-Length'])
                 post_data = self.rfile.read(content_length)
@@ -4506,65 +4442,53 @@ def start_keep_alive_loop():
 # --- START: Modified for robust execution and restart ---
 if __name__ == "__main__":
     # Prevenir múltiples instancias usando un lock file
-    # NOTA: En Railway/Docker, el PID siempre es 1, así que deshabilitamos esta verificación
-    # para evitar que el bot se cierre a sí mismo
     lock_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.bot_lock')
-    current_pid = os.getpid()
     
-    # Solo verificar lock file si NO estamos en Railway/Docker (PID != 1)
-    # En Railway, el proceso principal siempre tiene PID 1
-    if current_pid != 1:
-        # Verificar si ya hay una instancia corriendo
-        if os.path.exists(lock_file):
+    # Verificar si ya hay una instancia corriendo
+    if os.path.exists(lock_file):
+        try:
+            # Leer el PID del archivo lock
+            with open(lock_file, 'r') as f:
+                old_pid = int(f.read().strip())
+            
+            # Verificar si el proceso todavía está corriendo
             try:
-                # Leer el PID del archivo lock
-                with open(lock_file, 'r') as f:
-                    old_pid = int(f.read().strip())
-                
-                # Si el PID del lock es el mismo que el actual, es el mismo proceso
-                if old_pid == current_pid:
-                    logging.info(f"[INIT] Lock file pertenece a este proceso (PID: {current_pid}), continuando...")
-                else:
-                    # Verificar si el proceso todavía está corriendo
-                    try:
-                        process = psutil.Process(old_pid)
-                        if process.is_running():
-                            logging.warning(f"[INIT] Ya hay una instancia del bot corriendo (PID: {old_pid})")
-                            logging.warning("[INIT] Cerrando esta instancia para evitar conflictos...")
-                            sys.exit(0)
-                    except (psutil.NoSuchProcess, psutil.AccessDenied):
-                        # El proceso ya no existe, eliminar el lock file
-                        try:
-                            os.remove(lock_file)
-                        except:
-                            pass
-            except Exception as e:
-                logging.warning(f"[INIT] Error verificando lock file: {e}")
-                # Si hay error, eliminar el lock file y continuar
+                process = psutil.Process(old_pid)
+                if process.is_running():
+                    logging.warning(f"[INIT] Ya hay una instancia del bot corriendo (PID: {old_pid})")
+                    logging.warning("[INIT] Cerrando esta instancia para evitar conflictos...")
+                    sys.exit(0)
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                # El proceso ya no existe, eliminar el lock file
                 try:
                     os.remove(lock_file)
                 except:
                     pass
-        
-        # Crear el lock file con el PID actual
-        try:
-            with open(lock_file, 'w') as f:
-                f.write(str(current_pid))
         except Exception as e:
-            logging.warning(f"[INIT] No se pudo crear lock file: {e}")
-        
-        # Función para limpiar el lock file al salir
-        def cleanup_lock():
+            logging.warning(f"[INIT] Error verificando lock file: {e}")
+            # Si hay error, eliminar el lock file y continuar
             try:
-                if os.path.exists(lock_file):
-                    os.remove(lock_file)
+                os.remove(lock_file)
             except:
                 pass
-        
-        import atexit
-        atexit.register(cleanup_lock)
-    else:
-        logging.info("[INIT] Ejecutándose en Railway/Docker (PID: 1), lock file deshabilitado")
+    
+    # Crear el lock file con el PID actual
+    try:
+        with open(lock_file, 'w') as f:
+            f.write(str(os.getpid()))
+    except Exception as e:
+        logging.warning(f"[INIT] No se pudo crear lock file: {e}")
+    
+    # Función para limpiar el lock file al salir
+    def cleanup_lock():
+        try:
+            if os.path.exists(lock_file):
+                os.remove(lock_file)
+        except:
+            pass
+    
+    import atexit
+    atexit.register(cleanup_lock)
     
     # Initialize persistent HTTP session for connection pooling
     http_session = requests.Session()
@@ -4585,28 +4509,8 @@ if __name__ == "__main__":
         """
         Función principal del bot que se ejecuta en un thread daemon.
         Si crashea, NO cierra el proceso principal (el servidor HTTP sigue funcionando).
-        ESPERA a que se seleccione una región desde la web antes de iniciar.
         """
-        global selected_region, ids_passwords, region_selected_event, num_clients
-        
         try:
-            logging.info("[BOT] Esperando selección de región desde la web...")
-            logging.info("[BOT] El bot NO iniciará hasta que se seleccione una región en el panel web.")
-            
-            # Esperar a que se seleccione una región (máximo 24 horas)
-            region_selected = region_selected_event.wait(timeout=86400)
-            
-            if not region_selected:
-                logging.error("[BOT] Timeout esperando selección de región. Usando región por defecto (USA).")
-                selected_region = 'usa'
-                account_config = ACCOUNTS['usa']
-                ids_passwords = [(account_config['uid'], account_config['password'])]
-            else:
-                logging.info(f"[BOT] Región seleccionada: {selected_region}")
-            
-            # Actualizar num_clients con las cuentas disponibles
-            num_clients = len(ids_passwords)
-            
             logging.info("[BOT] Iniciando bot en thread daemon...")
             
             while True:  # Loop de reinicio del bot
@@ -4671,4 +4575,3 @@ if __name__ == "__main__":
         logging.critical(f"[MAIN] El bot no puede funcionar sin el servidor HTTP. Saliendo...")
         cleanup_lock()
         sys.exit(1)
-
