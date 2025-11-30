@@ -32,7 +32,7 @@ import urllib3
 from important_zitado import*
 from byte import*
 
-# --- START:  Gemini AI Integration ---
+# --- START: Gemini AI Integration ---
 GEMINI_MODEL = "gemini-2.5-flash"
 GEMINI_API_KEY = "AIzaSyB9TsNdahfnFRhx5iX5wlTuqAaFV6uz4q8"
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
