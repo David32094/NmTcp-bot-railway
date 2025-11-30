@@ -2955,14 +2955,17 @@ everything ok
                                 logging.info(f"[CREANDO PAQUETE] Target: {target_id} | Emote ID: {emote_id_to_send} (número: {emote_choice})")
                                 emote_packet = self.send_emote(target_id, emote_id_to_send)
                                 
-                                # Send the emote once and wait 15 seconds for it to complete
-                                logging.info(f"[ENVIANDO] Enviando emote #{emote_choice} una vez y esperando 15 segundos...")
-                                socket_client.send(emote_packet)
+                                # Send the emote 7 times, then wait 15 seconds
+                                logging.info(f"[ENVIANDO] Enviando emote #{emote_choice} 7 veces...")
+                                for i in range(7):
+                                    socket_client.send(emote_packet)
+                                    logging.info(f"[ENVIANDO] Paquete {i+1}/7 enviado")
                                 
-                                # Wait 15 seconds for the emote animation to complete
+                                # Wait 15 seconds after sending all 7 packets
+                                logging.info(f"[ESPERANDO] Esperando 15 segundos después de enviar los 7 paquetes...")
                                 time.sleep(15.0)
                                 
-                                logging.info(f"[OK] Emote #{emote_choice} completado (15 segundos) para {target_id}")
+                                logging.info(f"[OK] Emote #{emote_choice} completado (7 envíos + 15 segundos) para {target_id}")
                         
                         clients.send(self.GenResponsMsg(
                             f"[C][B][00FF00]Emote #{emote_choice} completed successfully!", uid_sender
@@ -3114,14 +3117,17 @@ everything ok
                                 logging.info(f"[CREANDO PAQUETE] Target: {target_id} | Emote ID: {emote_id}")
                                 emote_packet = self.send_emote(target_id, emote_id)
                                 
-                                # Send the emote once and wait 15 seconds for it to complete
-                                logging.info(f"[ENVIANDO] Enviando emote {emote_id} una vez y esperando 15 segundos...")
-                                socket_client.send(emote_packet) # Send action to online socket
+                                # Send the emote 7 times, then wait 15 seconds
+                                logging.info(f"[ENVIANDO] Enviando emote {emote_id} 7 veces...")
+                                for i in range(7):
+                                    socket_client.send(emote_packet) # Send action to online socket
+                                    logging.info(f"[ENVIANDO] Paquete {i+1}/7 enviado")
                                 
-                                # Wait 15 seconds for the emote animation to complete
+                                # Wait 15 seconds after sending all 7 packets
+                                logging.info(f"[ESPERANDO] Esperando 15 segundos después de enviar los 7 paquetes...")
                                 time.sleep(15.0)
                                 
-                                logging.info(f"[OK] Emote {emote_id} completado (15 segundos) para {target_id}")
+                                logging.info(f"[OK] Emote {emote_id} completado (7 envíos + 15 segundos) para {target_id}")
                         
                         clients.send(self.GenResponsMsg(f"[C][B][00FF00]Emote command completed!", uid_sender))
 
@@ -4221,7 +4227,7 @@ def process_panel_command(command, uid, emote_number, category=None, command_typ
                 emote_packet = active_client_instance.send_emote(target_id, emote_id_to_send)
                 
                 # Para evolutivas (comando /ev), usar el mismo método que /ev (5 veces con delay)
-                # Para normales/dúo (comando /play), usar el método de /play (1 vez y esperar 15 segundos)
+                # Para normales/dúo (comando /play), usar el método de /play (7 veces y esperar 15 segundos)
                 if command_type == '/ev' or category == "evolutivas":
                     logging.info(f"[PANEL] ENVIANDO EVOLUTIVA (/ev) - Enviando emote #{emote_choice} 5 veces (como /ev del chat)...")
                     for i in range(5):
@@ -4230,13 +4236,17 @@ def process_panel_command(command, uid, emote_number, category=None, command_typ
                         # SIN PAUSA entre envíos - ejecución inmediata
                     logging.info(f"[PANEL] OK - Emote evolutiva #{emote_choice} enviado a {target_id}")
                 else:
-                    # Send the emote once (sin espera)
-                    logging.info(f"[PANEL] ENVIANDO - Enviando emote #{emote_choice} una vez...")
-                    socket_client.send(emote_packet)
+                    # Send the emote 7 times, then wait 15 seconds
+                    logging.info(f"[PANEL] ENVIANDO - Enviando emote #{emote_choice} 7 veces...")
+                    for i in range(7):
+                        socket_client.send(emote_packet)
+                        logging.info(f"[PANEL] Paquete {i+1}/7 enviado")
                     
-                    # SIN PAUSA - ejecución inmediata
+                    # Wait 15 seconds after sending all 7 packets
+                    logging.info(f"[PANEL] ESPERANDO - Esperando 15 segundos después de enviar los 7 paquetes...")
+                    time.sleep(15.0)
                     
-                    logging.info(f"[PANEL] OK - Emote #{emote_choice} enviado a {target_id}")
+                    logging.info(f"[PANEL] OK - Emote #{emote_choice} completado (7 envíos + 15 segundos) para {target_id}")
         
         # Mensaje de éxito (como lo hace el chat)
         logging.info(f"[PANEL] Emote #{emote_choice} completed successfully!")
